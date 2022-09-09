@@ -40,6 +40,7 @@ export class CustomerComponent implements AfterViewInit, OnInit {
 
 	ngOnInit() {
 		this.createCustomerAddForm();
+		this.authService.userId;
 	}
 
 
@@ -70,9 +71,10 @@ export class CustomerComponent implements AfterViewInit, OnInit {
 			jQuery('#customer').modal('hide');
 			this.alertifyService.success(data);
 			this.clearFormGroup(this.customerAddForm);
-		})
-		console.log(this.customer);
+		}, responseError => {
+			this.alertifyService.error(responseError);
 
+		})
 	}
 
 	updateCustomer() {
@@ -87,7 +89,6 @@ export class CustomerComponent implements AfterViewInit, OnInit {
 			jQuery('#customer').modal('hide');
 			this.alertifyService.success(data);
 			this.clearFormGroup(this.customerAddForm);
-
 		})
 
 	}

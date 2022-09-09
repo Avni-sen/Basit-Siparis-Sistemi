@@ -47,6 +47,7 @@ export class AuthService {
         var decode = this.jwtHelper.decodeToken(this.storageService.getToken());
         var propUserName = Object.keys(decode).filter(x => x.endsWith("/name"))[0];
         this.userName = decode[propUserName];
+        this.getCurrentUserId();
         this.sharedService.sendChangeUserNameEvent();
 
         this.router.navigateByUrl("/dashboard");
@@ -69,7 +70,6 @@ export class AuthService {
       this.httpClient.get<string[]>(environment.getApiUrl + "/OperationClaims/getuserclaimsfromcache").subscribe(data => {
         this.claims = data;
       })
-
 
       var token = this.storageService.getToken();
       var decode = this.jwtHelper.decodeToken(token);
@@ -94,6 +94,7 @@ export class AuthService {
 
   getCurrentUserId() {
     var decode = this.jwtHelper.decodeToken(this.storageService.getToken());
+    console.log(decode)
     var propUserId = Object.keys(decode)?.filter(x => x.endsWith("/nameidentifier"))[0];
     this.userId = decode[propUserId];
     return this.userId;
