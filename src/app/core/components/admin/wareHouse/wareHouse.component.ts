@@ -9,6 +9,8 @@ import { AuthService } from 'app/core/components/admin/login/services/auth.servi
 import { WareHouse } from './models/WareHouse';
 import { WareHouseService } from './services/WareHouse.service';
 import { environment } from 'environments/environment';
+import { ProductService } from '../product/services/Product.service';
+import { Product } from '../product/models/Product';
 
 declare var jQuery: any;
 
@@ -18,29 +20,28 @@ declare var jQuery: any;
 	styleUrls: ['./wareHouse.component.scss']
 })
 export class WareHouseComponent implements AfterViewInit, OnInit {
-	
+
 	dataSource: MatTableDataSource<any>;
 	@ViewChild(MatPaginator) paginator: MatPaginator;
 	@ViewChild(MatSort) sort: MatSort;
-	displayedColumns: string[] = ['id','createdUserId','createdDate','lastUpdatedUserId','lastUpdatedDate','status','isDeleted','productId','amount','isReadyForSell', 'update','delete'];
+	displayedColumns: string[] = ['id', 'productId', 'amount', 'isReadyForSell', 'status', 'isDeleted', 'update', 'delete'];
 
-	wareHouseList:WareHouse[];
-	wareHouse:WareHouse=new WareHouse();
-
+	wareHouseList: WareHouse[];
+	wareHouse: WareHouse = new WareHouse();
 	wareHouseAddForm: FormGroup;
+	products: Product[] = [];
 
+	wareHouseId: number;
 
-	wareHouseId:number;
+	constructor(private wareHouseService: WareHouseService, private productService: ProductService, private lookupService: LookUpService, private alertifyService: AlertifyService, private formBuilder: FormBuilder, private authService: AuthService) { }
 
-	constructor(private wareHouseService:WareHouseService, private lookupService:LookUpService,private alertifyService:AlertifyService,private formBuilder: FormBuilder, private authService:AuthService) { }
-
-    ngAfterViewInit(): void {
-        this.getWareHouseList();
-    }
+	ngAfterViewInit(): void {
+		this.getWareHouseList();
+	}
 
 	ngOnInit() {
-
 		this.createWareHouseAddForm();
+		this.getProductList();
 	}
 
 
@@ -48,24 +49,32 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 		this.wareHouseService.getWareHouseList().subscribe(data => {
 			this.wareHouseList = data;
 			this.dataSource = new MatTableDataSource(data);
-            this.configDataTable();
+			this.configDataTable();
 		});
 	}
 
-	save(){
+	getProductList() {
 
+		this.productService.getProductList().subscribe(data => {
+			this.products = data;
+		})
+	}
+
+	save() {
 		if (this.wareHouseAddForm.valid) {
 			this.wareHouse = Object.assign({}, this.wareHouseAddForm.value)
-
-			if (this.wareHouse.id == 0)
+			if (this.wareHouse.id == 0) {
+				this.wareHouse.createdUserId = this.authService.getCurrentUserId();
+				this.wareHouse.lastUpdatedUserId = this.authService.getCurrentUserId();
 				this.addWareHouse();
+			}
 			else
 				this.updateWareHouse();
 		}
 
 	}
 
-	addWareHouse(){
+	addWareHouse() {
 
 		this.wareHouseService.addWareHouse(this.wareHouse).subscribe(data => {
 			this.getWareHouseList();
@@ -78,14 +87,14 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 
 	}
 
-	updateWareHouse(){
+	updateWareHouse() {
 
 		this.wareHouseService.updateWareHouse(this.wareHouse).subscribe(data => {
 
-			var index=this.wareHouseList.findIndex(x=>x.id==this.wareHouse.id);
-			this.wareHouseList[index]=this.wareHouse;
+			var index = this.wareHouseList.findIndex(x => x.id == this.wareHouse.id);
+			this.wareHouseList[index] = this.wareHouse;
 			this.dataSource = new MatTableDataSource(this.wareHouseList);
-            this.configDataTable();
+			this.configDataTable();
 			this.wareHouse = new WareHouse();
 			jQuery('#warehouse').modal('hide');
 			this.alertifyService.success(data);
@@ -96,33 +105,33 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 	}
 
 	createWareHouseAddForm() {
-		this.wareHouseAddForm = this.formBuilder.group({		
-			id : [0],
-createdUserId : [0, Validators.required],
-createdDate : [null, Validators.required],
-lastUpdatedUserId : [0, Validators.required],
-lastUpdatedDate : [null, Validators.required],
-status : [false, Validators.required],
-isDeleted : [false, Validators.required],
-productId : [0, Validators.required],
-amount : [0, Validators.required],
-isReadyForSell : [false, Validators.required]
+		this.wareHouseAddForm = this.formBuilder.group({
+			id: [0],
+			createdUserId: [this.authService.getCurrentUserId()],
+			createdDate: [Date.now],
+			lastUpdatedUserId: [this.authService.getCurrentUserId()],
+			lastUpdatedDate: [Date.now],
+			status: [false, Validators.required],
+			isDeleted: [false, Validators.required],
+			productId: [0, Validators.required],
+			amount: [0, Validators.required],
+			isReadyForSell: [false, Validators.required]
 		})
 	}
 
-	deleteWareHouse(wareHouseId:number){
-		this.wareHouseService.deleteWareHouse(wareHouseId).subscribe(data=>{
+	deleteWareHouse(wareHouseId: number) {
+		this.wareHouseService.deleteWareHouse(wareHouseId).subscribe(data => {
 			this.alertifyService.success(data.toString());
-			this.wareHouseList=this.wareHouseList.filter(x=> x.id!=wareHouseId);
+			this.wareHouseList = this.wareHouseList.filter(x => x.id != wareHouseId);
 			this.dataSource = new MatTableDataSource(this.wareHouseList);
 			this.configDataTable();
 		})
 	}
 
-	getWareHouseById(wareHouseId:number){
+	getWareHouseById(wareHouseId: number) {
 		this.clearFormGroup(this.wareHouseAddForm);
-		this.wareHouseService.getWareHouseById(wareHouseId).subscribe(data=>{
-			this.wareHouse=data;
+		this.wareHouseService.getWareHouseById(wareHouseId).subscribe(data => {
+			this.wareHouse = data;
 			this.wareHouseAddForm.patchValue(data);
 		})
 	}
@@ -140,7 +149,7 @@ isReadyForSell : [false, Validators.required]
 		});
 	}
 
-	checkClaim(claim:string):boolean{
+	checkClaim(claim: string): boolean {
 		return this.authService.claimGuard(claim)
 	}
 
@@ -158,4 +167,4 @@ isReadyForSell : [false, Validators.required]
 		}
 	}
 
-  }
+}

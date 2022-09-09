@@ -33,7 +33,7 @@ export class LoginComponent implements OnInit {
     this.httpClient.get<LookUp[]>(environment.getApiUrl +"/languages/getlookupwithcode").subscribe(data=>{
       this.langugelookUp=data;
     })
-    
+
   }
 
   getUserName(){

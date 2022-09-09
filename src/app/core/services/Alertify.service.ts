@@ -22,15 +22,15 @@ export class AlertifyService {
     this.translateService.get(message).subscribe((mes: string) => {
       alertify.success(mes);
     });
-    
+
   }
 
   error(message: string) {
-    this.translateService.get(message).subscribe((mes: string) => {      
+    this.translateService.get(message).subscribe((mes: string) => {
       alertify.error(mes);
     });
 
-    
+
   }
 
   info(message: string) {
@@ -46,7 +46,7 @@ export class AlertifyService {
     this.translateService.get(message).subscribe((mes: string) => {
       alertify.warning(message);
     });
- 
+
   }
 
   confirmDelete(url: string, values: any) {
@@ -74,7 +74,7 @@ export class AlertifyService {
   }
 
   delete(url: string, values: any) {
-    
+
     this.httpClient.request("delete", url, values)
   }
 

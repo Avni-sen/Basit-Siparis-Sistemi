@@ -52,7 +52,6 @@ export class ProductComponent implements AfterViewInit, OnInit {
 	getProductList() {
 		this.productService.getProductList().subscribe(data => {
 			this.productList = data;
-			console.log(data)
 			this.dataSource = new MatTableDataSource(data);
 			this.configDataTable();
 		});
@@ -63,10 +62,9 @@ export class ProductComponent implements AfterViewInit, OnInit {
 		if (this.productAddForm.valid) {
 			this.product = Object.assign({}, this.productAddForm.value)
 			if (this.product.id == 0) {
-				this.addProduct();
 				this.product.createdUserId = this.authService.userId;
 				this.product.lastUpdatedUserId = this.authService.userId;
-				console.log();
+				this.addProduct();
 			}
 			else {
 				this.updateProduct();
@@ -83,6 +81,8 @@ export class ProductComponent implements AfterViewInit, OnInit {
 			this.alertifyService.success(data);
 			this.clearFormGroup(this.productAddForm);
 
+		}, responseError => {
+			this.alertifyService.error(responseError.error);
 		})
 
 	}

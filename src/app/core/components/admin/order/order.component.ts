@@ -9,6 +9,12 @@ import { AuthService } from 'app/core/components/admin/login/services/auth.servi
 import { Order } from './models/Order';
 import { OrderService } from './services/Order.service';
 import { environment } from 'environments/environment';
+import { data } from 'jquery';
+import { Product } from '../product/models/Product';
+import { LookUp } from 'app/core/models/lookUp';
+import { ProductService } from '../product/services/Product.service';
+import { Customer } from '../customer/models/Customer';
+import { CustomerService } from '../customer/services/Customer.service';
 
 declare var jQuery: any;
 
@@ -18,29 +24,43 @@ declare var jQuery: any;
 	styleUrls: ['./order.component.scss']
 })
 export class OrderComponent implements AfterViewInit, OnInit {
-	
+
 	dataSource: MatTableDataSource<any>;
 	@ViewChild(MatPaginator) paginator: MatPaginator;
 	@ViewChild(MatSort) sort: MatSort;
-	displayedColumns: string[] = ['id','createdUserId','createdDate','lastUpdatedUserId','lastUpdatedDate','status','isDeleted','customerId','productId','amount', 'update','delete'];
+	displayedColumns: string[] = ['id', 'customerId', 'productId', 'amount', 'status', 'isDeleted', 'update', 'delete'];
 
-	orderList:Order[];
-	order:Order=new Order();
-
+	orderList: Order[];
+	order: Order = new Order();
 	orderAddForm: FormGroup;
+	orderId: number;
+	productlookUp: Product[] = [];
+	customerlookUp: Customer[] = [];
+	constructor(private orderService: OrderService, private customerService: CustomerService, private lookupService: LookUpService, private alertifyService: AlertifyService, private formBuilder: FormBuilder, private authService: AuthService, private productService: ProductService) { }
 
-
-	orderId:number;
-
-	constructor(private orderService:OrderService, private lookupService:LookUpService,private alertifyService:AlertifyService,private formBuilder: FormBuilder, private authService:AuthService) { }
-
-    ngAfterViewInit(): void {
-        this.getOrderList();
-    }
+	ngAfterViewInit(): void {
+		this.getOrderList();
+	}
 
 	ngOnInit() {
-
 		this.createOrderAddForm();
+		this.authService.getCurrentUserId();
+		this.getProductList();
+		this.getCustomerList();
+	}
+
+
+
+	getProductList() {
+		this.productService.getProductList().subscribe(data => {
+			this.productlookUp = data;
+		})
+	}
+
+	getCustomerList() {
+		this.customerService.getCustomerList().subscribe(data => {
+			this.customerlookUp = data;
+		})
 	}
 
 
@@ -48,25 +68,29 @@ export class OrderComponent implements AfterViewInit, OnInit {
 		this.orderService.getOrderList().subscribe(data => {
 			this.orderList = data;
 			this.dataSource = new MatTableDataSource(data);
-            this.configDataTable();
+			this.configDataTable();
 		});
 	}
 
-	save(){
+	save() {
 
 		if (this.orderAddForm.valid) {
 			this.order = Object.assign({}, this.orderAddForm.value)
 
-			if (this.order.id == 0)
+			if (this.order.id == 0) {
+				this.order.createdUserId = this.authService.getCurrentUserId();
+				this.order.lastUpdatedUserId = this.authService.getCurrentUserId();
 				this.addOrder();
-			else
+			}
+			else {
 				this.updateOrder();
+			}
+
 		}
 
 	}
 
-	addOrder(){
-
+	addOrder() {
 		this.orderService.addOrder(this.order).subscribe(data => {
 			this.getOrderList();
 			this.order = new Order();
@@ -74,55 +98,59 @@ export class OrderComponent implements AfterViewInit, OnInit {
 			this.alertifyService.success(data);
 			this.clearFormGroup(this.orderAddForm);
 
+		}, responseError => {
+			this.alertifyService.error(responseError.error)
 		})
 
 	}
 
-	updateOrder(){
+	updateOrder() {
 
 		this.orderService.updateOrder(this.order).subscribe(data => {
 
-			var index=this.orderList.findIndex(x=>x.id==this.order.id);
-			this.orderList[index]=this.order;
+			var index = this.orderList.findIndex(x => x.id == this.order.id);
+			this.orderList[index] = this.order;
 			this.dataSource = new MatTableDataSource(this.orderList);
-            this.configDataTable();
+			this.configDataTable();
 			this.order = new Order();
 			jQuery('#order').modal('hide');
 			this.alertifyService.success(data);
 			this.clearFormGroup(this.orderAddForm);
 
+		}, responseError => {
+			this.alertifyService.error(responseError)
 		})
 
 	}
 
 	createOrderAddForm() {
-		this.orderAddForm = this.formBuilder.group({		
-			id : [0],
-createdUserId : [0, Validators.required],
-createdDate : [null, Validators.required],
-lastUpdatedUserId : [0, Validators.required],
-lastUpdatedDate : [null, Validators.required],
-status : [false, Validators.required],
-isDeleted : [false, Validators.required],
-customerId : [0, Validators.required],
-productId : [0, Validators.required],
-amount : [0, Validators.required]
+		this.orderAddForm = this.formBuilder.group({
+			id: [0],
+			createdUserId: [this.authService.getCurrentUserId()],
+			createdDate: [Date.now],
+			lastUpdatedUserId: [this.authService.getCurrentUserId()],
+			lastUpdatedDate: [Date.now],
+			status: [false, Validators.required],
+			isDeleted: [false, Validators.required],
+			customerId: [0, Validators.required],
+			productId: [0, Validators.required],
+			amount: [0, Validators.required]
 		})
 	}
 
-	deleteOrder(orderId:number){
-		this.orderService.deleteOrder(orderId).subscribe(data=>{
+	deleteOrder(orderId: number) {
+		this.orderService.deleteOrder(orderId).subscribe(data => {
 			this.alertifyService.success(data.toString());
-			this.orderList=this.orderList.filter(x=> x.id!=orderId);
+			this.orderList = this.orderList.filter(x => x.id != orderId);
 			this.dataSource = new MatTableDataSource(this.orderList);
 			this.configDataTable();
 		})
 	}
 
-	getOrderById(orderId:number){
+	getOrderById(orderId: number) {
 		this.clearFormGroup(this.orderAddForm);
-		this.orderService.getOrderById(orderId).subscribe(data=>{
-			this.order=data;
+		this.orderService.getOrderById(orderId).subscribe(data => {
+			this.order = data;
 			this.orderAddForm.patchValue(data);
 		})
 	}
@@ -140,7 +168,7 @@ amount : [0, Validators.required]
 		});
 	}
 
-	checkClaim(claim:string):boolean{
+	checkClaim(claim: string): boolean {
 		return this.authService.claimGuard(claim)
 	}
 
@@ -158,4 +186,4 @@ amount : [0, Validators.required]
 		}
 	}
 
-  }
+}
