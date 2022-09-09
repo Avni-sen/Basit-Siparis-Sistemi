@@ -17,7 +17,7 @@ import { SharedService } from 'app/core/services/shared.service';
 export class AuthService {
 
   userName: string;
-  userId :number;
+  userId: number;
   isLoggin: boolean;
   decodedToken: any;
   userToken: string;
@@ -27,8 +27,7 @@ export class AuthService {
   constructor(private httpClient: HttpClient, private storageService: LocalStorageService,
     private router: Router, private alertifyService: AlertifyService, private sharedService: SharedService) {
     this.setClaims();
-    this.getCurrentUserId();
-  } 
+  }
 
   login(loginUser: LoginUser) {
 
@@ -95,7 +94,7 @@ export class AuthService {
 
   getCurrentUserId() {
     var decode = this.jwtHelper.decodeToken(this.storageService.getToken());
-    var propUserId = Object.keys(decode).filter(x => x.endsWith("/nameidentifier"))[0];
+    var propUserId = Object.keys(decode)?.filter(x => x.endsWith("/nameidentifier"))[0];
     this.userId = decode[propUserId];
     return this.userId;
   }

@@ -9,6 +9,8 @@ import { AuthService } from 'app/core/components/admin/login/services/auth.servi
 import { Product } from './models/Product';
 import { ProductService } from './services/Product.service';
 import { environment } from 'environments/environment';
+import { LookUp } from 'app/core/models/lookUp';
+import { QualityControlTypeEnumLabelMapping, Size } from './models/size-enum';
 
 declare var jQuery: any;
 
@@ -19,6 +21,8 @@ declare var jQuery: any;
 })
 export class ProductComponent implements AfterViewInit, OnInit {
 
+
+
 	dataSource: MatTableDataSource<any>;
 	@ViewChild(MatPaginator) paginator: MatPaginator;
 	@ViewChild(MatSort) sort: MatSort;
@@ -26,12 +30,10 @@ export class ProductComponent implements AfterViewInit, OnInit {
 
 	productList: Product[];
 	product: Product = new Product();
-
 	productAddForm: FormGroup;
-
-
 	productId: number;
-
+	sizelookUp: LookUp[] = [];
+	sizess: string[] = Object.keys(QualityControlTypeEnumLabelMapping);
 	constructor(private productService: ProductService, private lookupService: LookUpService, private alertifyService: AlertifyService, private formBuilder: FormBuilder, private authService: AuthService) { }
 
 	ngAfterViewInit(): void {
@@ -39,18 +41,18 @@ export class ProductComponent implements AfterViewInit, OnInit {
 	}
 
 	ngOnInit() {
-
-		console.log('adşslkfşdfk')
-		console.log('deneme canım bu artıkhkhjkk son olsun')
-		console.log('dsşlfksşldfks')
-		console.log('selamşdaslkaşslfkaşlsfa')
+		this.authService.getCurrentUserId();
 		this.createProductAddForm();
+		this.sizess.forEach(element => {
+			this.sizelookUp.push({ id: Number(element), label: QualityControlTypeEnumLabelMapping[Number(element)] });
+		});
 	}
 
 
 	getProductList() {
 		this.productService.getProductList().subscribe(data => {
 			this.productList = data;
+			console.log(data)
 			this.dataSource = new MatTableDataSource(data);
 			this.configDataTable();
 		});
@@ -60,13 +62,16 @@ export class ProductComponent implements AfterViewInit, OnInit {
 
 		if (this.productAddForm.valid) {
 			this.product = Object.assign({}, this.productAddForm.value)
-
-			if (this.product.id == 0)
+			if (this.product.id == 0) {
 				this.addProduct();
-			else
+				this.product.createdUserId = this.authService.userId;
+				this.product.lastUpdatedUserId = this.authService.userId;
+				console.log();
+			}
+			else {
 				this.updateProduct();
+			}
 		}
-
 	}
 
 	addProduct() {
@@ -102,10 +107,10 @@ export class ProductComponent implements AfterViewInit, OnInit {
 	createProductAddForm() {
 		this.productAddForm = this.formBuilder.group({
 			id: [0],
-			createdUserId: [0, Validators.required],
-			createdDate: [null, Validators.required],
-			lastUpdatedUserId: [0, Validators.required],
-			lastUpdatedDate: [null, Validators.required],
+			createdUserId: [this.authService.userId],
+			createdDate: [Date.now],
+			lastUpdatedUserId: [this.authService.userId],
+			lastUpdatedDate: [Date.now],
 			status: [false, Validators.required],
 			isDeleted: [false, Validators.required],
 			productName: ["", Validators.required],
