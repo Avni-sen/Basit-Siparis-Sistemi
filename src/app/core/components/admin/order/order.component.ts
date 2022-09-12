@@ -1,45 +1,55 @@
 import { Component, AfterViewInit, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { AlertifyService } from 'app/core/services/alertify.service';
-import { LookUpService } from 'app/core/services/lookUp.service';
 import { AuthService } from 'app/core/components/admin/login/services/auth.service';
 import { Order } from './models/Order';
 import { OrderService } from './services/Order.service';
-import { environment } from 'environments/environment';
-import { data } from 'jquery';
 import { Product } from '../product/models/Product';
-import { LookUp } from 'app/core/models/lookUp';
 import { ProductService } from '../product/services/Product.service';
 import { Customer } from '../customer/models/Customer';
 import { CustomerService } from '../customer/services/Customer.service';
-
+import { OrderDetails } from './models/orderDetails';
+import { Observable } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
 declare var jQuery: any;
+
+
 
 @Component({
 	selector: 'app-order',
 	templateUrl: './order.component.html',
 	styleUrls: ['./order.component.scss']
 })
+
+
 export class OrderComponent implements AfterViewInit, OnInit {
 
 	dataSource: MatTableDataSource<any>;
 	@ViewChild(MatPaginator) paginator: MatPaginator;
 	@ViewChild(MatSort) sort: MatSort;
-	displayedColumns: string[] = ['id', 'customerId', 'productId', 'amount', 'status', 'isDeleted', 'update', 'delete'];
+	displayedColumns: string[] = ['id', 'customerName', 'productName', 'amount', 'status', 'isDeleted', 'update', 'delete'];
 
-	orderList: Order[];
+	orderList: OrderDetails[];
 	order: Order = new Order();
 	orderAddForm: FormGroup;
 	orderId: number;
 	productlookUp: Product[] = [];
 	customerlookUp: Customer[] = [];
-	constructor(private orderService: OrderService, private customerService: CustomerService, private lookupService: LookUpService, private alertifyService: AlertifyService, private formBuilder: FormBuilder, private authService: AuthService, private productService: ProductService) { }
+
+
+	//auto complete
+	// myControl = new FormControl('');
+	// options: Customer[] = this.customerlookUp;
+	// filteredOptions: Observable<Customer[]>;
+
+
+	constructor(private orderService: OrderService, private customerService: CustomerService, private alertifyService: AlertifyService, private formBuilder: FormBuilder, private authService: AuthService, private productService: ProductService) { }
 
 	ngAfterViewInit(): void {
-		this.getOrderList();
+		this.getOrderDetails();
 	}
 
 	ngOnInit() {
@@ -48,8 +58,6 @@ export class OrderComponent implements AfterViewInit, OnInit {
 		this.getProductList();
 		this.getCustomerList();
 	}
-
-
 
 	getProductList() {
 		this.productService.getProductList().subscribe(data => {
@@ -64,13 +72,13 @@ export class OrderComponent implements AfterViewInit, OnInit {
 	}
 
 
-	getOrderList() {
-		this.orderService.getOrderList().subscribe(data => {
-			this.orderList = data;
-			this.dataSource = new MatTableDataSource(data);
-			this.configDataTable();
-		});
-	}
+	// getOrderList() {
+	// 	this.orderService.getOrderList().subscribe(data => {
+	// 		this.orderList = data;
+	// 		this.dataSource = new MatTableDataSource(data);
+	// 		this.configDataTable();
+	// 	});
+	// }
 
 	save() {
 
@@ -92,7 +100,7 @@ export class OrderComponent implements AfterViewInit, OnInit {
 
 	addOrder() {
 		this.orderService.addOrder(this.order).subscribe(data => {
-			this.getOrderList();
+			this.getOrderDetails();
 			this.order = new Order();
 			jQuery('#order').modal('hide');
 			this.alertifyService.success(data);
@@ -155,6 +163,14 @@ export class OrderComponent implements AfterViewInit, OnInit {
 		})
 	}
 
+	getOrderDetails() {
+		this.orderService.getOrderDetails().subscribe(data => {
+			this.orderList = data;
+			this.dataSource = new MatTableDataSource(data);
+			this.configDataTable();
+		});
+	}
+
 
 	clearFormGroup(group: FormGroup) {
 
@@ -165,6 +181,24 @@ export class OrderComponent implements AfterViewInit, OnInit {
 			group.get(key).setErrors(null);
 			if (key == 'id')
 				group.get(key).setValue(0);
+			if (key == 'status')
+				group.get(key).setValue(false);
+			if (key == 'isDeleted')
+				group.get(key).setValue(false);
+			if (key == 'customerId')
+				group.get(key).setValue(0);
+			if (key == 'productId')
+				group.get(key).setValue(0);
+			if (key == 'amount')
+				group.get(key).setValue(0);
+			if (key == 'createdUserId')
+				group.get(key).setValue(this.authService.getCurrentUserId());
+			if (key == 'lastUpdatedUserId')
+				group.get(key).setValue(this.authService.getCurrentUserId());
+			if (key == 'createdDate')
+				group.get(key).setValue(Date.now);
+			if (key == 'lastUpdatedDate')
+				group.get(key).setValue(Date.now());
 		});
 	}
 

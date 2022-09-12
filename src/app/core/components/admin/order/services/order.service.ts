@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Order } from '../models/Order';
 import { environment } from 'environments/environment';
+import { OrderDetails } from '../models/orderDetails';
 
 
 @Injectable({
@@ -36,5 +37,8 @@ export class OrderService {
     return this.httpClient.request('delete', environment.getApiUrl + '/orders/', { body: { id: id } });
   }
 
+  getOrderDetails(): Observable<OrderDetails[]> {
+    return this.httpClient.get<OrderDetails[]>(environment.getApiUrl + '/orders/getorderdetails')
+  }
 
 }

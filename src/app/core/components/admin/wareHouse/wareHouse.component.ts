@@ -36,7 +36,7 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 	constructor(private wareHouseService: WareHouseService, private productService: ProductService, private lookupService: LookUpService, private alertifyService: AlertifyService, private formBuilder: FormBuilder, private authService: AuthService) { }
 
 	ngAfterViewInit(): void {
-		this.getWareHouseList();
+		this.getWareHouseDetails();
 	}
 
 	ngOnInit() {
@@ -45,12 +45,20 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 	}
 
 
-	getWareHouseList() {
-		this.wareHouseService.getWareHouseList().subscribe(data => {
+	//getWareHouseList() {
+	// 	this.wareHouseService.getWareHouseList().subscribe(data => {
+	// 		this.wareHouseList = data;
+	// 		this.dataSource = new MatTableDataSource(data);
+	// 		this.configDataTable();
+	// 	});
+	// }
+
+	getWareHouseDetails() {
+		this.wareHouseService.getWareHouseDetails().subscribe(data => {
 			this.wareHouseList = data;
 			this.dataSource = new MatTableDataSource(data);
 			this.configDataTable();
-		});
+		})
 	}
 
 	getProductList() {
@@ -77,7 +85,7 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 	addWareHouse() {
 
 		this.wareHouseService.addWareHouse(this.wareHouse).subscribe(data => {
-			this.getWareHouseList();
+			this.getWareHouseDetails();
 			this.wareHouse = new WareHouse();
 			jQuery('#warehouse').modal('hide');
 			this.alertifyService.success(data);
@@ -146,6 +154,24 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 			group.get(key).setErrors(null);
 			if (key == 'id')
 				group.get(key).setValue(0);
+			if (key == 'productId')
+				group.get(key).setValue(0);
+			if (key == 'amount')
+				group.get(key).setValue(0);
+			if (key == 'isReadyForSell')
+				group.get(key).setValue(false);
+			if (key == 'status')
+				group.get(key).setValue(false);
+			if (key == 'isDeleted')
+				group.get(key).setValue(false);
+			if (key == 'createdUserId')
+				group.get(key).setValue(this.authService.getCurrentUserId());
+			if (key == 'createdDate')
+				group.get(key).setValue(Date.now);
+			if (key == 'lastUpdatedUserId')
+				group.get(key).setValue(this.authService.getCurrentUserId());
+			if (key == 'lastUpdatedDate')
+				group.get(key).setValue(Date.now);
 		});
 	}
 

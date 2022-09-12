@@ -22,7 +22,7 @@ export class CustomerComponent implements AfterViewInit, OnInit {
 	dataSource: MatTableDataSource<any>;
 	@ViewChild(MatPaginator) paginator: MatPaginator;
 	@ViewChild(MatSort) sort: MatSort;
-	displayedColumns: string[] = ['id', 'customerName', 'customerCode', 'address', 'phone', 'email', 'status', 'isDeleted', 'update', 'delete'];
+	displayedColumns: string[] = ['id', 'customerName', 'customerCode', 'address', 'phone', 'email', 'status', 'update', 'delete'];
 
 	customerList: Customer[];
 	customer: Customer = new Customer();
@@ -40,7 +40,7 @@ export class CustomerComponent implements AfterViewInit, OnInit {
 
 	ngOnInit() {
 		this.createCustomerAddForm();
-		this.authService.userId;
+		this.authService.getCurrentUserId();
 	}
 
 
@@ -56,6 +56,9 @@ export class CustomerComponent implements AfterViewInit, OnInit {
 		if (this.customerAddForm.valid) {
 			this.customer = Object.assign({}, this.customerAddForm.value)
 			if (this.customer.id == 0){
+				//getcurrentuserid gelicek.
+				this.customer.createdUserId = this.authService.userId;
+				this.customer.lastUpdatedUserId = this.authService.userId;
 				this.addCustomer();
 			}
 			else{
@@ -97,11 +100,9 @@ export class CustomerComponent implements AfterViewInit, OnInit {
 		this.customerAddForm = this.formBuilder.group({
 			id: [0],
 			createdUserId: [this.authService.userId],
-			createdDate: [Date.now],
 			lastUpdatedUserId: [this.authService.userId],
-			lastUpdatedDate: [Date.now],
-			status: [false, Validators.required],
-			isDeleted: [false, Validators.required],
+			status: [true, Validators.required],
+			isDeleted: [false],
 			customerName: ["", Validators.required],
 			customerCode: [0, Validators.required],
 			address: ["", Validators.required],
@@ -132,11 +133,29 @@ export class CustomerComponent implements AfterViewInit, OnInit {
 
 		group.markAsUntouched();
 		group.reset();
-
+        //default value değeri set edilecek.
 		Object.keys(group.controls).forEach(key => {
 			group.get(key).setErrors(null);
 			if (key == 'id')
 				group.get(key).setValue(0);
+			if (key == 'status')
+				group.get(key).setValue(true);
+			if (key == 'isDeleted')
+				group.get(key).setValue(false);
+			if (key == 'customerCode')
+				group.get(key).setValue(0);
+			if (key == 'createdUserId')
+				group.get(key).setValue(this.authService.userId);
+			if (key == 'lastUpdatedUserId')
+				group.get(key).setValue(this.authService.userId);
+			if (key == 'customerName')
+				group.get(key).setValue("");
+			if (key == 'address')
+				group.get(key).setValue("");
+			if (key == 'phone')
+				group.get(key).setValue("");
+			if (key == 'email')
+				group.get(key).setValue("");
 		});
 	}
 

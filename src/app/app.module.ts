@@ -15,13 +15,14 @@ import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
 import { LoginGuard } from './core/guards/login-guard';
 import { AuthInterceptorService } from './core/interceptors/auth-interceptor.service';
 import { HttpEntityRepositoryService } from './core/services/http-entity-repository.service';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
 
 // i18 kullanıclak ise aşağıdaki metod aktif edilecek
 
 //  export function HttpLoaderFactory(http: HttpClient) {
-//    
-//    var asd=new TranslateHttpLoader(http, '../../../../assets/i18n/', '.json'); 
+//
+//    var asd=new TranslateHttpLoader(http, '../../../../assets/i18n/', '.json');
 //    return asd;
 //  }
 
@@ -42,6 +43,7 @@ export function tokenGetter() {
     AppRoutingModule,
     NgMultiSelectDropDownModule.forRoot(),
     SweetAlert2Module.forRoot(),
+    MatAutocompleteModule,
     NgbModule,
     TranslateModule.forRoot({
       loader: {
@@ -65,7 +67,7 @@ export function tokenGetter() {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptorService,
       multi: true,
-    },    
+    },
     HttpEntityRepositoryService,
   ],
   bootstrap: [AppComponent],

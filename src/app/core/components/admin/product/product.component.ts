@@ -146,6 +146,24 @@ export class ProductComponent implements AfterViewInit, OnInit {
 			group.get(key).setErrors(null);
 			if (key == 'id')
 				group.get(key).setValue(0);
+			if (key = 'productName')
+				group.get(key).setValue('');
+			if (key = 'productColor')
+				group.get(key).setValue('');
+			if (key = 'size')
+				group.get(key).setValue('');
+			if (key == 'status')
+				group.get(key).setValue(false);
+			if (key == 'isDeleted')
+				group.get(key).setValue(false);
+			if (key == 'createdUserId')
+				group.get(key).setValue(this.authService.getCurrentUserId());
+			if (key == 'createdDate')
+				group.get(key).setValue(Date.now);
+			if (key == 'lastUpdatedUserId')
+				group.get(key).setValue(this.authService.getCurrentUserId());
+			if (key == 'lastUpdatedDate')
+				group.get(key).setValue(Date.now);
 		});
 	}
 
