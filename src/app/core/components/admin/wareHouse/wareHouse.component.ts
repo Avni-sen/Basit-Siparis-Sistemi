@@ -1,5 +1,5 @@
 import { Component, AfterViewInit, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -11,6 +11,8 @@ import { WareHouseService } from './services/WareHouse.service';
 import { environment } from 'environments/environment';
 import { ProductService } from '../product/services/Product.service';
 import { Product } from '../product/models/Product';
+import { Observable } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
 
 declare var jQuery: any;
 
@@ -24,7 +26,7 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 	dataSource: MatTableDataSource<any>;
 	@ViewChild(MatPaginator) paginator: MatPaginator;
 	@ViewChild(MatSort) sort: MatSort;
-	displayedColumns: string[] = ['id', 'productId', 'amount', 'isReadyForSell', 'status', 'isDeleted', 'update', 'delete'];
+	displayedColumns: string[] = ['id', 'productId', 'amount', 'isReadyForSell', 'status', 'update', 'delete'];
 
 	wareHouseList: WareHouse[];
 	wareHouse: WareHouse = new WareHouse();
@@ -33,6 +35,12 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 
 	wareHouseId: number;
 
+	//autocomplete
+	myControl = new FormControl();
+	options: string[] = ['One', 'Two', 'Three'];
+
+
+
 	constructor(private wareHouseService: WareHouseService, private productService: ProductService, private lookupService: LookUpService, private alertifyService: AlertifyService, private formBuilder: FormBuilder, private authService: AuthService) { }
 
 	ngAfterViewInit(): void {
@@ -40,8 +48,8 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 	}
 
 	ngOnInit() {
-		this.createWareHouseAddForm();
 		this.getProductList();
+		this.createWareHouseAddForm();
 	}
 
 
@@ -62,9 +70,9 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 	}
 
 	getProductList() {
-
 		this.productService.getProductList().subscribe(data => {
 			this.products = data;
+			console.log(this.products);
 		})
 	}
 

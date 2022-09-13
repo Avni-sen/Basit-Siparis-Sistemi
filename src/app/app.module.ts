@@ -16,7 +16,7 @@ import { LoginGuard } from './core/guards/login-guard';
 import { AuthInterceptorService } from './core/interceptors/auth-interceptor.service';
 import { HttpEntityRepositoryService } from './core/services/http-entity-repository.service';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-
+import { MaterialExampleModule } from 'material.module';
 
 // i18 kullanıclak ise aşağıdaki metod aktif edilecek
 
@@ -38,6 +38,7 @@ export function tokenGetter() {
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
+    MaterialExampleModule,
     ComponentsModule,
     RouterModule,
     AppRoutingModule,

@@ -44,7 +44,7 @@ export class ProductComponent implements AfterViewInit, OnInit {
 		this.authService.getCurrentUserId();
 		this.createProductAddForm();
 		this.sizess.forEach(element => {
-			this.sizelookUp.push({ id: Number(element), label: QualityControlTypeEnumLabelMapping[Number(element)] });
+			this.sizelookUp.push({ id: QualityControlTypeEnumLabelMapping[Number(element)], label: QualityControlTypeEnumLabelMapping[Number(element)] });
 		});
 	}
 

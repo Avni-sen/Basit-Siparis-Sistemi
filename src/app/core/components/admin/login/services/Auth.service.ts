@@ -95,7 +95,7 @@ export class AuthService {
   getCurrentUserId() {
     var decode = this.jwtHelper.decodeToken(this.storageService.getToken());
     var propUserId = Object.keys(decode)?.filter(x => x.endsWith("/nameidentifier"))[0];
-    this.userId = decode[propUserId];
+    this.userId = Number(decode[propUserId]);
     return this.userId;
   }
 

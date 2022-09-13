@@ -14,5 +14,4 @@ export const QualityControlTypeEnumLabelMapping: Record<Size, string> = {
     [Size.L]: "Large",
     [Size.XL]: "X Large",
     [Size.XXL]: "XX Large",
-
 }
