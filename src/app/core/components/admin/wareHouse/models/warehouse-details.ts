@@ -8,6 +8,7 @@ export class WareHouseDetails {
     isDeleted: boolean;
     productId?: number;
     productName?: string;
+    size?: string;
     amount?: number;
     isReadyForSell: boolean;
 }

@@ -14,6 +14,10 @@ import { CustomerService } from '../customer/services/Customer.service';
 import { OrderDetails } from './models/orderDetails';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
+import { WareHouseService } from '../wareHouse/services/WareHouse.service';
+import { WareHouse } from '../wareHouse/models/WareHouse';
+import { LookUp } from 'app/core/models/lookUp';
+import { QualityControlTypeEnumLabelMapping } from '../product/models/size-enum';
 declare var jQuery: any;
 
 
@@ -30,7 +34,7 @@ export class OrderComponent implements AfterViewInit, OnInit {
 	dataSource: MatTableDataSource<any>;
 	@ViewChild(MatPaginator) paginator: MatPaginator;
 	@ViewChild(MatSort) sort: MatSort;
-	displayedColumns: string[] = ['id', 'customerName', 'productName', 'amount', 'status', 'isDeleted', 'update', 'delete'];
+	displayedColumns: string[] = ['id', 'customerName', 'productName', 'amount', 'size', 'status', 'isDeleted', 'update', 'delete'];
 
 	orderList: OrderDetails[];
 	order: Order = new Order();
@@ -38,15 +42,16 @@ export class OrderComponent implements AfterViewInit, OnInit {
 	orderId: number;
 	productlookUp: Product[] = [];
 	customerlookUp: Customer[] = [];
-
+	sizelookUp: LookUp[] = [];
+	sizess: string[] = Object.keys(QualityControlTypeEnumLabelMapping);
 
 	//auto complete
-	// myControl = new FormControl('');
-	// options: Customer[] = this.customerlookUp;
-	// filteredOptions: Observable<Customer[]>;
+	myControl = new FormControl('');
+	options: Customer[] = this.customerlookUp;
+	filteredOptions: Observable<Customer[]>;
 
 
-	constructor(private orderService: OrderService, private customerService: CustomerService, private alertifyService: AlertifyService, private formBuilder: FormBuilder, private authService: AuthService, private productService: ProductService) { }
+	constructor(private orderService: OrderService, private wareHouseService: WareHouseService, private customerService: CustomerService, private alertifyService: AlertifyService, private formBuilder: FormBuilder, private authService: AuthService, private productService: ProductService) { }
 
 	ngAfterViewInit(): void {
 		this.getOrderDetails();
@@ -57,6 +62,9 @@ export class OrderComponent implements AfterViewInit, OnInit {
 		this.authService.getCurrentUserId();
 		this.getProductList();
 		this.getCustomerList();
+		this.sizess.forEach(element => {
+			this.sizelookUp.push({ id: [Number(element)], label: QualityControlTypeEnumLabelMapping[Number(element)] });
+		})
 	}
 
 	getProductList() {
@@ -80,6 +88,12 @@ export class OrderComponent implements AfterViewInit, OnInit {
 	// 	});
 	// }
 
+
+	//sizelookupa id gönder ona göre labeli getir
+	getSizeLabel(id: number) {
+		return this.sizelookUp.find(x => x.id == id).label;
+	}
+
 	save() {
 
 		if (this.orderAddForm.valid) {
@@ -88,7 +102,11 @@ export class OrderComponent implements AfterViewInit, OnInit {
 			if (this.order.id == 0) {
 				this.order.createdUserId = this.authService.getCurrentUserId();
 				this.order.lastUpdatedUserId = this.authService.getCurrentUserId();
+				this.order.createdDate = Date.now;
+				this.order.lastUpdatedDate = Date.now;
+				this.order.isDeleted = false;
 				this.addOrder();
+
 			}
 			else {
 				this.updateOrder();
@@ -105,7 +123,7 @@ export class OrderComponent implements AfterViewInit, OnInit {
 			jQuery('#order').modal('hide');
 			this.alertifyService.success(data);
 			this.clearFormGroup(this.orderAddForm);
-
+			this.getOrderDetails();
 		}, responseError => {
 			this.alertifyService.error(responseError.error)
 		})
@@ -124,7 +142,7 @@ export class OrderComponent implements AfterViewInit, OnInit {
 			jQuery('#order').modal('hide');
 			this.alertifyService.success(data);
 			this.clearFormGroup(this.orderAddForm);
-
+			this.getOrderDetails();
 		}, responseError => {
 			this.alertifyService.error(responseError)
 		})
@@ -134,15 +152,12 @@ export class OrderComponent implements AfterViewInit, OnInit {
 	createOrderAddForm() {
 		this.orderAddForm = this.formBuilder.group({
 			id: [0],
-			createdUserId: [this.authService.getCurrentUserId()],
-			createdDate: [Date.now],
-			lastUpdatedUserId: [this.authService.getCurrentUserId()],
-			lastUpdatedDate: [Date.now],
 			status: [false, Validators.required],
-			isDeleted: [false, Validators.required],
+			isDeleted: [Validators.required],
 			customerId: [0, Validators.required],
 			productId: [0, Validators.required],
-			amount: [0, Validators.required]
+			amount: [0, Validators.required],
+			size: ['', Validators.required],
 		})
 	}
 
@@ -191,6 +206,8 @@ export class OrderComponent implements AfterViewInit, OnInit {
 				group.get(key).setValue(0);
 			if (key == 'amount')
 				group.get(key).setValue(0);
+			if (key == 'size')
+				group.get(key).setValue("");
 			if (key == 'createdUserId')
 				group.get(key).setValue(this.authService.getCurrentUserId());
 			if (key == 'lastUpdatedUserId')
@@ -198,7 +215,7 @@ export class OrderComponent implements AfterViewInit, OnInit {
 			if (key == 'createdDate')
 				group.get(key).setValue(Date.now);
 			if (key == 'lastUpdatedDate')
-				group.get(key).setValue(Date.now());
+				group.get(key).setValue(Date.now);
 		});
 	}
 

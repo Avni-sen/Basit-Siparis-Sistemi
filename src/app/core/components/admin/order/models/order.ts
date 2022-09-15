@@ -1,5 +1,8 @@
 ﻿
 export class Order {
+    wareHouseId(productId: number, amount: number, id: number, size: string, wareHouseId: any) {
+        throw new Error('Method not implemented.');
+    }
     id?: number;
     createdUserId?: number;
     createdDate?: (Date | any);
@@ -10,5 +13,6 @@ export class Order {
     customerId?: number;
     productId?: number;
     amount?: number;
+    size?: string;
 
 }

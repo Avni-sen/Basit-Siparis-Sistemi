@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 import { Order } from '../models/Order';
 import { environment } from 'environments/environment';
 import { OrderDetails } from '../models/orderDetails';
+import { WareHouse } from '../../wareHouse/models/WareHouse';
+import { Size } from '@agm/core/services/google-maps-types';
 
 
 @Injectable({

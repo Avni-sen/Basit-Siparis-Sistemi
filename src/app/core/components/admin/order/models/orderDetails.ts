@@ -6,6 +6,7 @@ export class OrderDetails {
     customerName?: string;
     productName?: string;
     amount?: number;
+    size?: string;
     createdUserId?: number;
     createdDate?: (Date | any);
     lastUpdatedUserId?: number;

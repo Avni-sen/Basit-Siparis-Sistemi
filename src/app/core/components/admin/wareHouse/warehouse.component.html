@@ -60,13 +60,18 @@
                 </ng-container>
 
                 <ng-container matColumnDef="productId">
-                  <th mat-header-cell *matHeaderCellDef mat-sort-header>{{'ProductName'|translate}}</th>
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>{{'ProductId'|translate}}</th>
                   <td mat-cell *matCellDef="let element">{{element.productName}}</td>
                 </ng-container>
 
                 <ng-container matColumnDef="amount">
                   <th mat-header-cell *matHeaderCellDef mat-sort-header>{{'Amount'|translate}}</th>
                   <td mat-cell *matCellDef="let element">{{element.amount}}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="size">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>{{'Size'|translate}}</th>
+                  <td mat-cell *matCellDef="let element">{{getSizeLabel(element.size)}}</td>
                 </ng-container>
 
                 <ng-container matColumnDef="isReadyForSell">
@@ -127,19 +132,30 @@
         <form *ngIf="wareHouseAddForm" [formGroup]="wareHouseAddForm" (ngSubmit)="save()">
           <div class="row">
             <div class="col-md-12">
-              <select class="browser-default custom-select" formControlName="productName">
+              <p>Product Name</p>
+              <!-- <select class="browser-default custom-select" formControlName="productId">
                 <option *ngFor="let item of products" [value]="item.id">{{item.productName}}</option>
-              </select>
-              <!-- <mat-form-field class="example-full-width">
-                              <mat-select placeholder="Product Name" name="productId">
-                              <mat-option *ngFor="let item of products" [value]="item.id">
-                                  {{item.productName}}
-                                </mat-option>
-                              </mat-select>
-                            </mat-form-field> -->
+              </select> -->
+              
+              
+              <mat-form-field>
+                <input type="text" placeholder="Pick one" aria-label="Number" matInput formControlName="productId" [matAutocomplete]="auto">
+                <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" [displayWith]="displayFn">
+                  <mat-option *ngFor="let item of filteredProducts | async" [value]="item">{{item.productName}}
+                  </mat-option>
+                </mat-autocomplete>
+                </mat-form-field>
+                
+                </div>
+                </div>
+                <div class="row">
+                  <div class="col col-md-12">
+                    <select class="browser-default custom-select" name="size" formControlName="size">
+                      <option *ngFor="let item of sizelookUp" placeholder="Seçiniz" [value]="item.id"> {{item.label}}</option>
+                    </select>
             </div>
-            </div>
-            <div class="row">
+          </div>
+          <div class="row">
             <div class="col col-md-12">
               <mat-form-field class="example-full-width">
                 <input matInput placeholder="amount" type="text" id="amount" name="amount" formControlName="amount" />

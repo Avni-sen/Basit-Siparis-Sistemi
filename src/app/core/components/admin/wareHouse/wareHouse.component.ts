@@ -13,6 +13,8 @@ import { ProductService } from '../product/services/Product.service';
 import { Product } from '../product/models/Product';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
+import { QualityControlTypeEnumLabelMapping, Size } from '../product/models/size-enum';
+import { LookUp } from 'app/core/models/lookUp';
 
 declare var jQuery: any;
 
@@ -26,18 +28,19 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 	dataSource: MatTableDataSource<any>;
 	@ViewChild(MatPaginator) paginator: MatPaginator;
 	@ViewChild(MatSort) sort: MatSort;
-	displayedColumns: string[] = ['id', 'productId', 'amount', 'isReadyForSell', 'status', 'update', 'delete'];
+	displayedColumns: string[] = ['id', 'productId', 'amount', 'size', 'isReadyForSell', 'status', 'update', 'delete'];
 
 	wareHouseList: WareHouse[];
 	wareHouse: WareHouse = new WareHouse();
 	wareHouseAddForm: FormGroup;
 	products: Product[] = [];
 
+	sizelookUp: LookUp[] = [];
+	sizess: string[] = Object.keys(QualityControlTypeEnumLabelMapping);
 	wareHouseId: number;
 
 	//autocomplete
-	myControl = new FormControl();
-	options: string[] = ['One', 'Two', 'Three'];
+	filteredProducts: Observable<Product[]>;
 
 
 
@@ -50,16 +53,11 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 	ngOnInit() {
 		this.getProductList();
 		this.createWareHouseAddForm();
+		this.sizess.forEach(element => {
+			this.sizelookUp.push({ id: [Number(element)], label: QualityControlTypeEnumLabelMapping[Number(element)] });
+		});
 	}
 
-
-	//getWareHouseList() {
-	// 	this.wareHouseService.getWareHouseList().subscribe(data => {
-	// 		this.wareHouseList = data;
-	// 		this.dataSource = new MatTableDataSource(data);
-	// 		this.configDataTable();
-	// 	});
-	// }
 
 	getWareHouseDetails() {
 		this.wareHouseService.getWareHouseDetails().subscribe(data => {
@@ -72,33 +70,59 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 	getProductList() {
 		this.productService.getProductList().subscribe(data => {
 			this.products = data;
-			console.log(this.products);
+			this.filteredProducts = this.wareHouseAddForm.controls.productId.valueChanges.pipe(
+				startWith(''),
+				map(value => typeof value === 'string' ? value : value.productName),
+				map(name => name ? this._filter(name) : this.products.slice())
+			);
+
 		})
+	}
+
+	private _filter(value: string): Product[] {
+		const filterValue = value.toLowerCase();
+
+		return this.products.filter(option => option.productName.toLowerCase().includes(filterValue));
+	}
+	displayFn(user: Product): string {
+		return user && user.productName ? user.productName : '';
+	}
+
+
+	//sizelookupa id gönder id si eşit olan labeli getir...
+	getSizeLabel(id: number) {
+		return QualityControlTypeEnumLabelMapping[id]
 	}
 
 	save() {
 		if (this.wareHouseAddForm.valid) {
 			this.wareHouse = Object.assign({}, this.wareHouseAddForm.value)
+			debugger
+			console.log(this.wareHouse);
+			this.wareHouse.productId = this.wareHouse.productId['id'];
+			console.log(this.wareHouse);
+
 			if (this.wareHouse.id == 0) {
 				this.wareHouse.createdUserId = this.authService.getCurrentUserId();
 				this.wareHouse.lastUpdatedUserId = this.authService.getCurrentUserId();
+				this.wareHouse.createdDate = Date.now;
+				this.wareHouse.lastUpdatedDate = Date.now;
+				this.wareHouse.isDeleted = false;
 				this.addWareHouse();
 			}
 			else
 				this.updateWareHouse();
 		}
-
 	}
 
 	addWareHouse() {
 
 		this.wareHouseService.addWareHouse(this.wareHouse).subscribe(data => {
-			this.getWareHouseDetails();
+			this.getProductList();
 			this.wareHouse = new WareHouse();
 			jQuery('#warehouse').modal('hide');
 			this.alertifyService.success(data);
-			this.clearFormGroup(this.wareHouseAddForm);
-
+			this.clearFormGroup(this.wareHouseAddForm); this.getWareHouseDetails();
 		})
 
 	}
@@ -106,7 +130,6 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 	updateWareHouse() {
 
 		this.wareHouseService.updateWareHouse(this.wareHouse).subscribe(data => {
-
 			var index = this.wareHouseList.findIndex(x => x.id == this.wareHouse.id);
 			this.wareHouseList[index] = this.wareHouse;
 			this.dataSource = new MatTableDataSource(this.wareHouseList);
@@ -115,7 +138,7 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 			jQuery('#warehouse').modal('hide');
 			this.alertifyService.success(data);
 			this.clearFormGroup(this.wareHouseAddForm);
-
+			this.getWareHouseDetails();
 		})
 
 	}
@@ -123,14 +146,11 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 	createWareHouseAddForm() {
 		this.wareHouseAddForm = this.formBuilder.group({
 			id: [0],
-			createdUserId: [this.authService.getCurrentUserId()],
-			createdDate: [Date.now],
-			lastUpdatedUserId: [this.authService.getCurrentUserId()],
-			lastUpdatedDate: [Date.now],
 			status: [false, Validators.required],
-			isDeleted: [false, Validators.required],
+			isDeleted: [Validators.required],
 			productId: [0, Validators.required],
 			amount: [0, Validators.required],
+			size: [0, Validators.required],
 			isReadyForSell: [false, Validators.required]
 		})
 	}
@@ -168,8 +188,10 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 				group.get(key).setValue(0);
 			if (key == 'isReadyForSell')
 				group.get(key).setValue(false);
+			if (key == 'size')
+				group.get(key).setValue(0);
 			if (key == 'status')
-				group.get(key).setValue(false);
+				group.get(key).setValue(true);
 			if (key == 'isDeleted')
 				group.get(key).setValue(false);
 			if (key == 'createdUserId')

@@ -32,8 +32,11 @@ export class ProductComponent implements AfterViewInit, OnInit {
 	product: Product = new Product();
 	productAddForm: FormGroup;
 	productId: number;
+
 	sizelookUp: LookUp[] = [];
 	sizess: string[] = Object.keys(QualityControlTypeEnumLabelMapping);
+
+
 	constructor(private productService: ProductService, private lookupService: LookUpService, private alertifyService: AlertifyService, private formBuilder: FormBuilder, private authService: AuthService) { }
 
 	ngAfterViewInit(): void {
@@ -44,10 +47,13 @@ export class ProductComponent implements AfterViewInit, OnInit {
 		this.authService.getCurrentUserId();
 		this.createProductAddForm();
 		this.sizess.forEach(element => {
-			this.sizelookUp.push({ id: QualityControlTypeEnumLabelMapping[Number(element)], label: QualityControlTypeEnumLabelMapping[Number(element)] });
+			this.sizelookUp.push({ id: [Number(element)], label: QualityControlTypeEnumLabelMapping[Number(element)] });
 		});
 	}
 
+	getSizeLabel(id: number) {
+		return this.sizelookUp.find(x => x.id == id).label;
+	}
 
 	getProductList() {
 		this.productService.getProductList().subscribe(data => {
@@ -64,6 +70,9 @@ export class ProductComponent implements AfterViewInit, OnInit {
 			if (this.product.id == 0) {
 				this.product.createdUserId = this.authService.userId;
 				this.product.lastUpdatedUserId = this.authService.userId;
+				this.product.createdDate = Date.now;
+				this.product.lastUpdatedDate = Date.now;
+				this.product.isDeleted = false;
 				this.addProduct();
 			}
 			else {
@@ -99,7 +108,6 @@ export class ProductComponent implements AfterViewInit, OnInit {
 			jQuery('#product').modal('hide');
 			this.alertifyService.success(data);
 			this.clearFormGroup(this.productAddForm);
-
 		})
 
 	}
@@ -107,12 +115,8 @@ export class ProductComponent implements AfterViewInit, OnInit {
 	createProductAddForm() {
 		this.productAddForm = this.formBuilder.group({
 			id: [0],
-			createdUserId: [this.authService.userId],
-			createdDate: [Date.now],
-			lastUpdatedUserId: [this.authService.userId],
-			lastUpdatedDate: [Date.now],
 			status: [false, Validators.required],
-			isDeleted: [false, Validators.required],
+			isDeleted: [Validators.required],
 			productName: ["", Validators.required],
 			productColor: ["", Validators.required],
 			size: ["", Validators.required]
@@ -150,7 +154,7 @@ export class ProductComponent implements AfterViewInit, OnInit {
 				group.get(key).setValue('');
 			if (key = 'productColor')
 				group.get(key).setValue('');
-			if (key = 'size')
+			if (key == 'size')
 				group.get(key).setValue('');
 			if (key == 'status')
 				group.get(key).setValue(false);
