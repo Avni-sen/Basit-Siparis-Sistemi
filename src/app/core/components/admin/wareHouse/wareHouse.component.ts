@@ -89,6 +89,7 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 	}
 
 
+
 	//sizelookupa id gönder id si eşit olan labeli getir...
 	getSizeLabel(id: number) {
 		return QualityControlTypeEnumLabelMapping[id]
@@ -97,7 +98,6 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 	save() {
 		if (this.wareHouseAddForm.valid) {
 			this.wareHouse = Object.assign({}, this.wareHouseAddForm.value)
-			debugger
 			console.log(this.wareHouse);
 			this.wareHouse.productId = this.wareHouse.productId['id'];
 			console.log(this.wareHouse);
@@ -139,6 +139,8 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 			this.alertifyService.success(data);
 			this.clearFormGroup(this.wareHouseAddForm);
 			this.getWareHouseDetails();
+		}, responseError => {
+			this.alertifyService.error(responseError.error)
 		})
 
 	}
@@ -150,6 +152,7 @@ export class WareHouseComponent implements AfterViewInit, OnInit {
 			isDeleted: [Validators.required],
 			productId: [0, Validators.required],
 			amount: [0, Validators.required],
+			productName: [''],
 			size: [0, Validators.required],
 			isReadyForSell: [false, Validators.required]
 		})

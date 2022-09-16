@@ -34,7 +34,7 @@ export class OrderComponent implements AfterViewInit, OnInit {
 	dataSource: MatTableDataSource<any>;
 	@ViewChild(MatPaginator) paginator: MatPaginator;
 	@ViewChild(MatSort) sort: MatSort;
-	displayedColumns: string[] = ['id', 'customerName', 'productName', 'amount', 'size', 'status', 'isDeleted', 'update', 'delete'];
+	displayedColumns: string[] = ['id', 'customerName', 'productName', 'amount', 'size', 'status', 'update', 'delete'];
 
 	orderList: OrderDetails[];
 	order: Order = new Order();
@@ -46,9 +46,9 @@ export class OrderComponent implements AfterViewInit, OnInit {
 	sizess: string[] = Object.keys(QualityControlTypeEnumLabelMapping);
 
 	//auto complete
-	myControl = new FormControl('');
-	options: Customer[] = this.customerlookUp;
-	filteredOptions: Observable<Customer[]>;
+	//autocomplete
+	filteredProducts: Observable<Product[]>;
+	filteredCustomers: Observable<Customer[]>;
 
 
 	constructor(private orderService: OrderService, private wareHouseService: WareHouseService, private customerService: CustomerService, private alertifyService: AlertifyService, private formBuilder: FormBuilder, private authService: AuthService, private productService: ProductService) { }
@@ -70,12 +70,49 @@ export class OrderComponent implements AfterViewInit, OnInit {
 	getProductList() {
 		this.productService.getProductList().subscribe(data => {
 			this.productlookUp = data;
+
+			this.filteredProducts = this.orderAddForm.controls.productId.valueChanges.pipe(
+				startWith(''),
+				map(value => typeof value === 'string' ? value : value.productName),
+				map(name => name ? this._filter(name) : this.productlookUp.slice())
+			);
 		})
 	}
+
+
+	//product auto complete
+	private _filter(value: string): Product[] {
+		const filterValue = value.toLowerCase();
+
+		return this.productlookUp.filter(option => option.productName.toLowerCase().includes(filterValue));
+	}
+	displayFn(product: Product): string {
+		return product && product.productName ? product.productName : '';
+	}
+
+
+	//customer auto complete
+	private _filter1(value: string): Customer[] {
+		const filterValue1 = value.toLowerCase();
+
+		return this.customerlookUp.filter(option => option.customerName.toLowerCase().includes(filterValue1));
+	}
+
+	displayFn1(customer: Customer): string {
+		return customer && customer.customerName ? customer.customerName : '';
+	}
+
+
+
 
 	getCustomerList() {
 		this.customerService.getCustomerList().subscribe(data => {
 			this.customerlookUp = data;
+			this.filteredCustomers = this.orderAddForm.controls.customerId.valueChanges.pipe(
+				startWith(''),
+				map(value1 => typeof value1 === 'string' ? value1 : value1.customerName),
+				map(name1 => name1 ? this._filter1(name1) : this.customerlookUp.slice())
+			);
 		})
 	}
 
@@ -156,6 +193,8 @@ export class OrderComponent implements AfterViewInit, OnInit {
 			isDeleted: [Validators.required],
 			customerId: [0, Validators.required],
 			productId: [0, Validators.required],
+			productName: [''],
+			customerName: [''],
 			amount: [0, Validators.required],
 			size: ['', Validators.required],
 		})

@@ -163,25 +163,33 @@
         <form *ngIf="orderAddForm" [formGroup]="orderAddForm" (ngSubmit)="save()">
           <div class="row">
             <div class="col-md-12">
-              <select class="browser-default custom-select" formControlName="customerId">
+              <!-- <select class="browser-default custom-select" formControlName="customerId">
                 <option *ngFor="let item of customerlookUp" [value]="item.id">
                   {{ item.customerName }}
                 </option>
-              </select>
+              </select> -->
+              <mat-form-field>
+                <input type="text" placeholder="Select Customer" aria-label="Number" matInput formControlName="customerId" [matAutocomplete]="auto">
+                <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" [displayWith]="displayFn1">
+                  <mat-option *ngFor="let item of filteredCustomers | async" [value]="item">{{item.customerName}}
+                  </mat-option>
+                </mat-autocomplete>
+              </mat-form-field>
             </div>
           </div>
           <br />
           <div class="row">
             <div class="col-md-12">
-              <select class="browser-default custom-select" formControlName="productId">
+              <!-- <select class="browser-default custom-select" formControlName="productId">
                 <option *ngFor="let item of productlookUp" [value]="item.id"> {{item.productName}}</option>
-              </select>
-              <!-- <mat-autocomplete class="browser-default custom-select" #auto="matAutocomplete">
-                <mat-option *ngFor="let option of productlookUp | async" [value]="option.id">
-                  {{ option.productName }}
+              </select> -->
+              <mat-form-field>
+                <input type="text" placeholder="Select Product" aria-label="Number" matInput formControlName="productId" [matAutocomplete]="auto1">
+                <mat-autocomplete autoActiveFirstOption #auto1="matAutocomplete" [displayWith]="displayFn">
+                  <mat-option *ngFor="let item of filteredProducts | async" [value]="item">{{item.productName}}
                   </mat-option>
-                  </mat-autocomplete>
-              <input [matAutocomplete]="auto" formControl="searchTerm" /> -->
+                </mat-autocomplete>
+                </mat-form-field>
               </div>
               </div>
               <div class="row">

@@ -136,23 +136,20 @@
               <!-- <select class="browser-default custom-select" formControlName="productId">
                 <option *ngFor="let item of products" [value]="item.id">{{item.productName}}</option>
               </select> -->
-              
-              
               <mat-form-field>
                 <input type="text" placeholder="Pick one" aria-label="Number" matInput formControlName="productId" [matAutocomplete]="auto">
                 <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" [displayWith]="displayFn">
                   <mat-option *ngFor="let item of filteredProducts | async" [value]="item">{{item.productName}}
                   </mat-option>
                 </mat-autocomplete>
-                </mat-form-field>
-                
-                </div>
-                </div>
-                <div class="row">
-                  <div class="col col-md-12">
-                    <select class="browser-default custom-select" name="size" formControlName="size">
-                      <option *ngFor="let item of sizelookUp" placeholder="Seçiniz" [value]="item.id"> {{item.label}}</option>
-                    </select>
+              </mat-form-field>
+            </div>
+            </div>
+            <div class="row">
+              <div class="col col-md-12">
+                <select class="browser-default custom-select" name="size" formControlName="size">
+                  <option *ngFor="let item of sizelookUp" placeholder="Seçiniz" [value]="item.id"> {{item.label}}</option>
+                </select>
             </div>
           </div>
           <div class="row">
