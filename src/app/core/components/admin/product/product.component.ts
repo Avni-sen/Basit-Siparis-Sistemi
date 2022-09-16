@@ -26,7 +26,7 @@ export class ProductComponent implements AfterViewInit, OnInit {
 	dataSource: MatTableDataSource<any>;
 	@ViewChild(MatPaginator) paginator: MatPaginator;
 	@ViewChild(MatSort) sort: MatSort;
-	displayedColumns: string[] = ['id', 'productName', 'productColor', 'size', 'status', 'isDeleted', 'update', 'delete'];
+	displayedColumns: string[] = ['id', 'productName', 'productColor', 'size', 'status', 'update', 'delete'];
 
 	productList: Product[];
 	product: Product = new Product();
@@ -108,6 +108,8 @@ export class ProductComponent implements AfterViewInit, OnInit {
 			jQuery('#product').modal('hide');
 			this.alertifyService.success(data);
 			this.clearFormGroup(this.productAddForm);
+		}, responseError => {
+			this.alertifyService.error(responseError.error)
 		})
 
 	}
